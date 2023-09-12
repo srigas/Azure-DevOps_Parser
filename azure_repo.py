@@ -20,12 +20,15 @@ git_client = connection.clients.get_git_client()
 items = git_client.get_items(repository_id=repository_name, scope_path=folder,
                              project=project_name, recursion_level='Full')
 
+# setup possible exceptions - the exceptions can be whole folders, or specific files, e.g.:
+exceptions = ["Dockerfile", "scripts"]
+
 with open('contents.txt', 'w', encoding='utf-8') as contents_file:
     for item in items:
-        # ensure that the selected item is not a folder
-        if not item.is_folder:
-            # get the path
-            file_path = item.path
+        # get the path
+        file_path = item.path
+        # ensure that the selected item is not a folder and that it is not an exception
+        if not (item.is_folder or any(part in exceptions for part in file_path.split('/'))):
             # use the path to read the content of the file
             file_content_generator = git_client.get_item_content(repository_id=repository_name, path=file_path,
                                                                 project=project_name, download=False)
